@@ -14,7 +14,6 @@ Qualification Varchar(50),
 Experience_Years int
 );
 
-use naukari;
 INSERT INTO Job_Seeker 
 (Seeker_Id,First_Name, Last_Name, Gender, Date_Of_Birth, Email, Phone_Number, City, Qualification, Experience_Years)
 VALUES
@@ -112,8 +111,6 @@ VALUES
 (1009,4, 9,'2025-09-10','Apply'),
 (1010,10, 10,'2025-09-11','Shortlisted');
 
-truncate table Applications;
-
 select * from Applications;
 
 create table Skills
@@ -137,11 +134,7 @@ VALUES
 (999, 9,'Network Administrator','Intermediate'),
 (1000, 10,'Relationship Manager','Intermediate');
 
-truncate table Skills;
-
 select * from Skills;
-
-use naukari;
 
 -- List all the Jobs seekers who have morethan 5 years of experience? --
 select Seeker_Id,concat(First_Name,' ',Last_Name) as Full_Name
@@ -176,11 +169,11 @@ Having count(a.Job_Id)>3;
 use naukari;
 
 -- Rank the Jobs by the Salary offered within each Industry? --
- select j.Job_Title,e.Industry,Salary_Min,Salary_Max,
- rank() over(partition by e.Industry order by Salary_Max  DESC)as Salary_Rank
- from Jobs j JOIN Employers  e
- ON e.Employer_Id=j.Employer_Id
- order by e.Industry,Salary_Rank;
+select j.Job_Title,e.Industry,Salary_Min,Salary_Max,
+rank() over(partition by e.Industry order by Salary_Max  DESC)as Salary_Rank
+from Jobs j JOIN Employers  e
+ON e.Employer_Id=j.Employer_Id
+order by e.Industry,Salary_Rank;
 
 --Find the job seekers who never applied for any job? --
 select Seeker_Id,First_Name
@@ -234,7 +227,6 @@ group by j.Job_Id,Job_Title
 order by Highest DESC
 Limit 1;
 
-use naukari;
 -- Find the percentage of Applications that got hired? --
 SELECT 
    (SUM(CASE WHEN App_Status = 'Hired' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS hire_percentage
