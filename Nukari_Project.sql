@@ -142,25 +142,31 @@ truncate table Skills;
 select * from Skills;
 
 use naukari;
+
+-- List all the Jobs seekers who have morethan 5 years of experience? --
 select Seeker_Id,concat(First_Name,' ',Last_Name) as Full_Name
 From Job_Seeker
 where Experience_Years>5;
 
+-- Find the distinct Industries of employeers in the portal? --
 Select DISTINCT Industry
 from Employers; 
 
+- Show all jobs and the number of applications recieved for each job? --
 select j.Job_Title,count(Application_Id)as Total_Applications
 from Jobs j LEFT JOIN Applications a
 ON a.Job_Id=j.Job_Id
 group by j.Job_Title
 order by Total_Applications DESC;
 
+-- which skill is most common among job_seekers? --
 select Skill_Name,count(*) as Total_Jobseekers
 from Skills
 group by Skill_Name
 order by Total_Jobseekers DESC
 Limit 1;
 
+-- List the job_Seekers who applied to morethan 3 Jobs? -- 
 select js.Seeker_Id,js.First_Name,count(a.Job_Id)as Total_App
 From  Applications a JOIN Job_Seeker js
 ON js.Seeker_Id=a.Seeker_Id
@@ -169,17 +175,19 @@ Having count(a.Job_Id)>3;
 
 use naukari;
 
-
+-- Rank the Jobs by the Salary offered within each Industry? --
  select j.Job_Title,e.Industry,Salary_Min,Salary_Max,
-   rank() over(partition by e.Industry order by Salary_Max  DESC)as Salary_Rank
-    from Jobs j JOIN Employers  e
-    ON e.Employer_Id=j.Employer_Id
-    order by e.Industry,Salary_Rank;
+ rank() over(partition by e.Industry order by Salary_Max  DESC)as Salary_Rank
+ from Jobs j JOIN Employers  e
+ ON e.Employer_Id=j.Employer_Id
+ order by e.Industry,Salary_Rank;
 
+--Find the job seekers who never applied for any job? --
 select Seeker_Id,First_Name
 from Job_Seeker 
 where Seeker_Id NOT IN(Select Seeker_Id from Applications);
 
+-- Show the Number of Applications recieved by each company? --
 select e.Company_Name,count(Application_Id) as Num_Of_App
 from Employers e JOIN Jobs j
 ON j.Employer_Id=e.Employer_Id
@@ -187,12 +195,13 @@ LEFT JOIN Applications a
 ON a.Job_Id=j.Job_Id
 group by e.Company_Name;
 
-
-select *
-from Jobs j JOIN Employers e
+-- find all jobs posted by TCS Comapany? --
+select *from 
+Jobs j JOIN Employers e
 ON e.Employer_Id=j.Employer_Id
 where e.Company_Name='TCS';
 
+-- Show Cumulative application over-time? -- 
 select Application_Date,Count(Application_Id) as Num_Of_App,
 Sum(count(Application_Id)) over(order by Application_Date) as Cummulative
 from Applications
@@ -201,7 +210,7 @@ Order by Application_Date;
 
 use naukari;
 
-
+-- Get the most common skill in each city? --
 SELECT js.City, s.Skill_Name, COUNT(*) AS skill_count
 FROM Job_Seeker js
 JOIN Skills s ON js.Seeker_id = s.Seeker_id
@@ -217,33 +226,28 @@ HAVING COUNT(*) = (
     ) x
 );
 
+-- Find the Job with the highest salary in each industry? --
 select j.Job_Id,j.Job_Title,e.Industry,j.Salary_Max,max(Salary_Max) as Highest
 from Jobs j  JOIN  Employers e                                                                         
 ON e.Employer_Id=j.Employer_Id
 group by j.Job_Id,Job_Title
 order by Highest DESC
-Limit 2;
+Limit 1;
 
 use naukari;
+-- Find the percentage of Applications that got hired? --
 SELECT 
    (SUM(CASE WHEN App_Status = 'Hired' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS hire_percentage
 FROM Applications;
 
-
+--Show the Seekers with morethan 2 Skills? --
 SELECT js.Seeker_Id, js.First_Name, js.Last_Name, COUNT(s.Skill_Id) AS total_skills
 FROM Job_Seeker js
 JOIN Skills s ON js.Seeker_Id = s.Seeker_Id
 GROUP BY js.Seeker_Id, js.First_Name, js.Last_Name
 HAVING COUNT(s.Skill_Id) > 2;
 
-select *
-from Applications a JOIN Jobs j
-ON a.Job_Id=j.Job_Id
-JOIN Employers e
-ON e.Employer_Id=j.Employer_Id
-where e.Industry='IT'  AND App_Status='Apply';
-
-use naukari;
+-- Find Seekers who have applied to jobs only in the IT Industry? --
 SELECT js.Seeker_Id, js.First_Name, js.Last_Name
 FROM Job_Seeker js
 WHERE NOT EXISTS (
@@ -254,6 +258,7 @@ WHERE NOT EXISTS (
     WHERE a.Seeker_Id = js.Seeker_Id
 	AND e.Industry <> 'IT'
 );
+-- (or) --
 
 SELECT js.Seeker_id, js.First_Name, js.Last_Name
 FROM Job_Seeker js
@@ -263,7 +268,7 @@ LEFT JOIN Employers e ON j.Employer_Id = e.Employer_Id
 GROUP BY js.Seeker_Id, js.First_Name, js.Last_Name
 HAVING COUNT(CASE WHEN e.Industry <> 'IT' THEN 1 END) = 0;
 
-
+-- Find Jobs where the number of Apllications is above the average Applications per Job? --
 SELECT j.Job_Id, j.Job_Title, COUNT(Application_Id) AS total_apps
 FROM Jobs j LEFT JOIN Applications a
  ON j.Job_Id = a.Job_Id
@@ -278,7 +283,7 @@ HAVING COUNT(Application_Id) > (
 );
 
 use naukari;
-
+-- Calculate the moving Average of apllications perday last 7 Days?
 SELECT Application_Date,
 COUNT(Application_Id) AS daily_apps,
 AVG(COUNT(Application_Id)) OVER (ORDER BY Application_Date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg
@@ -286,18 +291,14 @@ FROM Applications
 GROUP BY Application_Date
 ORDER BY Application_Date;
 
+-- Find month with the highest number of job Postings? --
 select Job_Posted_Date,Job_Title,count(Job_Id) as Total_Job_Ids,
 MONTH(Job_Posted_Date) as months 
 from Jobs
 group by Job_Posted_Date,Job_Title
 order by Total_Job_Ids DESC;
 
-
-select count(DISTINCT case when App_Status='Apply' then Application_Id END) as Apply,
-count(DISTINCT case when App_Status='Short_Listed' then Application_Id END) as Short_Listed,
-count(DISTINCT case when App_Status='Hired' then Application_Id END) as Hired
-from Applications;
-
+--Find the Conversion Rate for each Comapny? --
 SELECT e.Company_Name,
        COUNT(a.Application_Id) AS total_apps,
        SUM(CASE WHEN a.App_Status = 'Shortlisted' THEN 1 ELSE 0 END) AS shortlisted,
@@ -309,14 +310,7 @@ JOIN Applications a
 ON j.Job_Id = a.Job_Id
 GROUP BY e.Company_Name;
 
-select a.Job_Id,j.Job_Title,count(a.Job_Id) as Total_Appl
-from Jobs j  JOIN Applications a
-ON a.Job_Id=j.Job_Id
-group by a.Job_Id
-order by Total_Appl DESC
-Limit 3;
-
-
+-- Show the top 3 most applied jobs in each Industry? --
 SELECT Industry,Job_Title,rnk
 from(
 SELECT e.Industry, j.Job_Title, COUNT(a.Application_Id) AS total_apps,
@@ -326,7 +320,7 @@ JOIN Employers e ON j.Employer_Id = e.Employer_Id
 JOIN Applications a ON j.Job_Id = a.Job_Id
 GROUP BY e.Industry, j.Job_Title)x
 where rnk<=3;
-
+-- (or) --
 SELECT Industry, Job_Title, Total_Apps, rnk
 FROM (
     SELECT e.Industry,
@@ -344,7 +338,7 @@ FROM (
 WHERE rnk <= 3
 ORDER BY Industry, rnk;
 
-
+-- Find the job with the Highest higher to Application ratio? --
 SELECT j.Job_Id, j.Job_Title,
 SUM(CASE WHEN a.App_Status = 'Hired' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS hire_ratio
 FROM Jobs j
@@ -352,11 +346,11 @@ JOIN Applications a ON j.Job_Id = a.Job_Id
 GROUP BY j.Job_Id, j.Job_Title
 ORDER BY hire_ratio DESC;
 
-
+-- we want frequency check the job-Seekers and their Applications using Views? --
 CREATE VIEW SeekerApplications AS
 SELECT js.Seeker_Id, js.First_Name, js.Last_Name, j.Job_Title, a.App_Status
 FROM Job_Seeker js
 JOIN Applications a ON js.Seeker_Id = a.Seeker_Id
 JOIN Jobs j ON a.Job_Id = j.Job_Id;
 
-select * from SeekerApplications;
+
