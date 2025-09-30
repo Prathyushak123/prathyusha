@@ -258,10 +258,10 @@ LEFT JOIN Employers e ON j.Employer_Id = e.Employer_Id
 GROUP BY js.Seeker_Id, js.First_Name, js.Last_Name
 HAVING COUNT(CASE WHEN e.Industry <> 'IT' THEN 1 END) = 0;
 
--- Find Jobs where the number of Apllications is above the average Applications per Job? --
+-- Find Jobs where the number of Applications is above the average Applications per Job? --
 SELECT j.Job_Id, j.Job_Title, COUNT(Application_Id) AS total_apps
 FROM Jobs j LEFT JOIN Applications a
-ON j.Job_Id = a.Job_Id
+ON a.Job_Id = j.Job_Id
 GROUP BY j.Job_Id, j.Job_Title
 HAVING COUNT(Application_Id) > (
     SELECT AVG(app_count)
