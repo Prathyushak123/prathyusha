@@ -166,8 +166,6 @@ ON js.Seeker_Id=a.Seeker_Id
 group by js.Seeker_Id,js.First_Name
 Having count(a.Job_Id)>3;
 
-use naukari;
-
 -- Rank the Jobs by the Salary offered within each Industry? --
 select j.Job_Title,e.Industry,Salary_Min,Salary_Max,
 rank() over(partition by e.Industry order by Salary_Max  DESC)as Salary_Rank
@@ -263,7 +261,7 @@ HAVING COUNT(CASE WHEN e.Industry <> 'IT' THEN 1 END) = 0;
 -- Find Jobs where the number of Apllications is above the average Applications per Job? --
 SELECT j.Job_Id, j.Job_Title, COUNT(Application_Id) AS total_apps
 FROM Jobs j LEFT JOIN Applications a
- ON j.Job_Id = a.Job_Id
+ON j.Job_Id = a.Job_Id
 GROUP BY j.Job_Id, j.Job_Title
 HAVING COUNT(Application_Id) > (
     SELECT AVG(app_count)
